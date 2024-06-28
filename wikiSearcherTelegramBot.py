@@ -2,12 +2,12 @@ import wikipedia
 from telegram import Update, Bot
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 
-# Класс для обработки запроса к Википедии
+# A class for processing a Wikipedia request
 class WikiResponse:
     def __init__(self, query, num_sentences):
         self._query = query
         self._num_sentences = num_sentences
-        wikipedia.set_lang("ru")
+        wikipedia.set_lang("en")
         self._summary = wikipedia.summary(self._query, sentences=self._num_sentences)
         self._page = wikipedia.page(self._query)
 
@@ -17,11 +17,11 @@ class WikiResponse:
     def get_page_url(self):
         return self._page.url
 
-# Обработчик команды /start
+# The handler of the /start command
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text('Привет! Отправь мне запрос, и я найду информацию в Википедии.')
+    await update.message.reply_text('Hi! Send me a request and I will find the information on Wikipedia')
 
-# Обработчик текстовых сообщений
+# The handler of the text messages
 async def handle_message(update: Update, context: CallbackContext):
     user_query = update.message.text
     try:
@@ -30,28 +30,28 @@ async def handle_message(update: Update, context: CallbackContext):
         page_url = wiki_res.get_page_url()
         response_text = f'{summary}nnПолная статья: {page_url}'
     except wikipedia.exceptions.DisambiguationError as e:  
-        response_text = f'Запрос неоднозначен. Возможные варианты: {", ".join(e.options)}'
+        response_text = f'The request is ambiguous. Possible options: {", ".join(e.options)}'
     except wikipedia.exceptions.PageError:
-        response_text = 'Статья не найдена.'
+        response_text = 'The article was not found.'
     except wikipedia.exceptions.WikipediaException as e:
-        response_text = f'Произошла ошибка: {str(e)}'
+        response_text = f'An error has occurred: {str(e)}'
     await update.message.reply_text(response_text)
 
-# Основная функция для запуска бота
+# main func
 def main():
-    # Вставь свой токен здесь
-    TOKEN = '7298998177:AAHIvPLIKCAmOQiB1jq0vhNO-PIPa1PNryA'
+    # Insert your token here
+    TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
 
-    # Создание приложения
+    # Creating of aplication
     application = Application.builder().token(TOKEN).build()
 
-    # Обработчики команды  start
+    # Handlers of the start command
     application.add_handler(CommandHandler("start", start))
 
-    # Обработчик всех текстовых сообщений
+    # The handler of the text messages
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Запускаем бота
+    # Run the bot
     application.run_polling()
 
 if __name__ == '__main__':
